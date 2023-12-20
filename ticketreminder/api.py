@@ -198,7 +198,7 @@ class TicketReminder(Component):
             else:
                 time = to_utimestamp(parse_date(req.args.get('date')))
 
-            self.env.db_transaction("""INSERT INTO ticketreminder (ticket, time, author, origin, reminded, repeat, description) VALUES (%s, %s, %s, %s, 0, %s, %s)""", (ticket.id, time, get_reporter_id(req, 'author'),
+            self.env.db_transaction("""INSERT INTO ticketreminder (ticket, `time`, author, origin, reminded, `repeat`, description) VALUES (%s, %s, %s, %s, 0, %s, %s)""", (ticket.id, time, get_reporter_id(req, 'author'),
                       origin, repeat, req.args.get('description')))
 
             add_notice(req, "Reminder has been added.")
@@ -254,7 +254,7 @@ class TicketReminder(Component):
         redirect_url = get_resource_url(self.env, ticket.resource, req.href)
 
         with self.env.db_transaction as db:
-            for reminder in db("""SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE id=%s""", (reminder_id,)):
+            for reminder in db("""SELECT id, `time`, author, origin, `repeat`, description FROM ticketreminder WHERE id=%s""", (reminder_id,)):
                 break
             else:
                 add_warning(req, "Could not find reminder to delete.")
@@ -278,7 +278,7 @@ class TicketReminder(Component):
         return "ticket_reminder_delete_jinja.html", data
 
     def _get_reminders(self, ticket_id):
-        for row in self.env.db_query("""SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE ticket=%s AND reminded=0 ORDER BY time""", (ticket_id,)):
+        for row in self.env.db_query("""SELECT id, `time`, author, origin, `repeat`, description FROM ticketreminder WHERE ticket=%s AND reminded=0 ORDER BY time""", (ticket_id,)):
             yield row
 
     def _format_reminder(self, req, ticket, id, time, author, origin, repeat, description, delete_button=True):
@@ -422,7 +422,7 @@ class TicketReminder(Component):
 
     def _do_check_and_send(self):
         now = to_utimestamp(to_datetime(None))
-        for row in self.env.db_query("""SELECT id, ticket, time, author, origin, repeat, description FROM ticketreminder WHERE reminded=0 AND %s>=time""", (now,)):
+        for row in self.env.db_query("""SELECT id, ticket, `time`, author, origin, `repeat`, description FROM ticketreminder WHERE reminded=0 AND %s>=time""", (now,)):
             self._do_send(*row)
 
     @staticmethod
