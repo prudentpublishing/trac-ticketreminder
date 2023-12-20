@@ -203,9 +203,7 @@ class TicketReminder(Component):
                 time = to_utimestamp(parse_date(req.args.get('date')))
 
             self.env.db_transaction("""
-                INSERT INTO ticketreminder
-                 (ticket, time, author, origin, reminded, repeat, description)
-                VALUES (%s, %s, %s, %s, 0, %s, %s)
+                INSERT INTO ticketreminder (ticket, time, author, origin, reminded, repeat, description) VALUES (%s, %s, %s, %s, 0, %s, %s)
                 """, (ticket.id, time, get_reporter_id(req, 'author'),
                       origin, repeat, req.args.get('description')))
 
@@ -263,8 +261,7 @@ class TicketReminder(Component):
 
         with self.env.db_transaction as db:
             for reminder in db("""
-                    SELECT id, time, author, origin, repeat, description
-                    FROM ticketreminder WHERE id=%s
+                    SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE id=%s
                     """, (reminder_id,)):
                 break
             else:
@@ -290,9 +287,7 @@ class TicketReminder(Component):
 
     def _get_reminders(self, ticket_id):
         for row in self.env.db_query("""
-            SELECT id, time, author, origin, repeat, description
-            FROM ticketreminder
-            WHERE ticket=%s AND reminded=0 ORDER BY time
+            SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE ticket=%s AND reminded=0 ORDER BY time
             """, (ticket_id,)):
             yield row
 
@@ -557,8 +552,7 @@ class TicketReminder(Component):
         cnum = None
         if event.time:
             rows = self._db_query("""\
-                SELECT field, oldvalue FROM ticket_change
-                WHERE ticket=%s AND time=%s AND field='comment'
+                SELECT field, oldvalue FROM ticket_change WHERE ticket=%s AND time=%s AND field='comment'
                 """, (ticket.id, to_utimestamp(event.time)))
             for field, oldvalue in rows:
                 if oldvalue:
