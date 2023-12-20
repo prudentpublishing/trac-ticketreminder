@@ -110,13 +110,9 @@ class TicketReminder(Component):
                     db(stmt)
 
             if not self.found_db_version:
-                db("""
-                    INSERT INTO system (name, value) VALUES (%s, %s)
-                    """, (db_default.name, db_default.version))
+                db("""INSERT INTO system (name, value) VALUES (%s, %s)""", (db_default.name, db_default.version))
             else:
-                db("""
-                    UPDATE system SET value=%s WHERE name=%s
-                    """, (db_default.version, db_default.name))
+                db("""UPDATE system SET value=%s WHERE name=%s""", (db_default.version, db_default.name))
 
         self.log.info('Upgraded %s schema version from %d to %d',
                       db_default.name, self.found_db_version,
@@ -202,9 +198,7 @@ class TicketReminder(Component):
             else:
                 time = to_utimestamp(parse_date(req.args.get('date')))
 
-            self.env.db_transaction("""
-                INSERT INTO ticketreminder (ticket, time, author, origin, reminded, repeat, description) VALUES (%s, %s, %s, %s, 0, %s, %s)
-                """, (ticket.id, time, get_reporter_id(req, 'author'),
+            self.env.db_transaction("""INSERT INTO ticketreminder (ticket, time, author, origin, reminded, repeat, description) VALUES (%s, %s, %s, %s, 0, %s, %s)""", (ticket.id, time, get_reporter_id(req, 'author'),
                       origin, repeat, req.args.get('description')))
 
             add_notice(req, "Reminder has been added.")
@@ -284,9 +278,7 @@ class TicketReminder(Component):
         return "ticket_reminder_delete_jinja.html", data
 
     def _get_reminders(self, ticket_id):
-        for row in self.env.db_query("""
-            SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE ticket=%s AND reminded=0 ORDER BY time
-            """, (ticket_id,)):
+        for row in self.env.db_query("""SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE ticket=%s AND reminded=0 ORDER BY time""", (ticket_id,)):
             yield row
 
     def _format_reminder(self, req, ticket, id, time, author, origin, repeat, description, delete_button=True):
@@ -430,9 +422,7 @@ class TicketReminder(Component):
 
     def _do_check_and_send(self):
         now = to_utimestamp(to_datetime(None))
-        for row in self.env.db_query("""
-                SELECT id, ticket, time, author, origin, repeat, description FROM ticketreminder WHERE reminded=0 AND %s>=time
-                    """, (now,)):
+        for row in self.env.db_query("""SELECT id, ticket, time, author, origin, repeat, description FROM ticketreminder WHERE reminded=0 AND %s>=time""", (now,)):
             self._do_send(*row)
 
     @staticmethod
@@ -549,9 +539,7 @@ class TicketReminder(Component):
         ticket = event.target
         cnum = None
         if event.time:
-            rows = self._db_query("""\
-                SELECT field, oldvalue FROM ticket_change WHERE ticket=%s AND time=%s AND field='comment'
-                """, (ticket.id, to_utimestamp(event.time)))
+            rows = self._db_query("""SELECT field, oldvalue FROM ticket_change WHERE ticket=%s AND time=%s AND field='comment'""", (ticket.id, to_utimestamp(event.time)))
             for field, oldvalue in rows:
                 if oldvalue:
                     cnum = int(oldvalue.rsplit('.', 1)[-1])
@@ -1025,10 +1013,7 @@ class TicketReminderTicketPreviousUpdatersSubscriber(Component):
     def matches(self, event):
         updaters = None
         if (event.realm == 'ticketreminder') and ('reminder' in event.category):
-            updaters = [author for author, in self.env.db_query("""
-                SELECT DISTINCT author FROM ticket_change
-                WHERE ticket=%s
-                """, (event.target.id,))]
+            updaters = [author for author, in self.env.db_query("""SELECT DISTINCT author FROM ticket_change WHERE ticket=%s""", (event.target.id,))]
         return _ticket_reminder_subscribers(self, updaters)
 
     def description(self):
