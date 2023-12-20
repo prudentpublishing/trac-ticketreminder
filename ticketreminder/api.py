@@ -260,9 +260,7 @@ class TicketReminder(Component):
         redirect_url = get_resource_url(self.env, ticket.resource, req.href)
 
         with self.env.db_transaction as db:
-            for reminder in db("""
-                    SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE id=%s
-                    """, (reminder_id,)):
+            for reminder in db("""SELECT id, time, author, origin, repeat, description FROM ticketreminder WHERE id=%s""", (reminder_id,)):
                 break
             else:
                 add_warning(req, "Could not find reminder to delete.")
